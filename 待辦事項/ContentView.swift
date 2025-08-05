@@ -1,3 +1,6 @@
+//by ivan
+//v1.0.0
+
 import SwiftUI
 
 struct ContentView: View {
@@ -10,11 +13,11 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // 最上方的版本號和 Pre-release 標籤
                     HStack {
-                        Text("v0.1.43")
+                        Text("v1.0.0")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                         Spacer()
-                        Text("Pre-release")
+                        Text("Debug-mode")
                             .font(.caption)
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
