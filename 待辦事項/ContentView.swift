@@ -1,124 +1,121 @@
 import SwiftUI
 
-struct Task: Identifiable, Codable {
-    let id: UUID
-    var title: String
-    var isDone: Bool
+struct ContentView: View {
+    @State private var todos: [ToDoItem] = []
+    @State private var showAddView = false
 
-    init(id: UUID = UUID(), title: String, isDone: Bool = false) {
-        self.id = id
-        self.title = title
-        self.isDone = isDone
+    var body: some View {
+        NavigationView {
+            ZStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 0) {
+                    // 最上方的版本號和 Pre-release 標籤
+                    HStack {
+                        Text("v0.1.43")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        Spacer()
+                        Text("Pre-release")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.orange)
+                            .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 10) // 增加頂部間距
+
+                    // 待辦事項標題
+                    Text("待辦事項")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(.leading)
+                        .padding(.top, 20) // 增加與上方元素的間距
+
+                    // 待辦事項列表
+                    List {
+                        ForEach(todos) { todo in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(todo.title)
+                                        .font(.title2)
+                                        .bold()
+                                    Text("截止日期: \(todo.dueDate, formatter: Self.dateFormatter)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                        .italic()
+                                }
+                                Spacer()
+                                if todo.isCompleted {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                }
+                            }
+                            .contentShape(Rectangle()) // 讓整行都可以點擊
+                            .onTapGesture {
+                                // 這裡可以加入編輯或完成的功能
+                                // 例如: toggleCompletion(for: todo)
+                            }
+                        }
+                        .onDelete(perform: deleteItems)
+                    }
+                    .listStyle(.plain) // 讓列表沒有預設的邊框和分隔線
+                }
+
+                // 底部的新增按鈕
+                Button(action: {
+                    showAddView = true
+                }) {
+                    Image(systemName: "plus")
+                        .font(.largeTitle)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.orange)
+                        .clipShape(Circle())
+                }
+                .padding(.bottom, 20)
+            }
+            .navigationTitle("")
+            .navigationBarHidden(true) // 隱藏原有的導覽列
+            .sheet(isPresented: $showAddView) {
+                AddToDoView(todos: $todos)
+            }
+            .onAppear(perform: loadData)
+        }
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    private func deleteItems(at offsets: IndexSet) {
+        todos.remove(atOffsets: offsets)
+        saveData()
+    }
+
+    private func loadData() {
+        if let savedItems = UserDefaults.standard.data(forKey: "ToDoItems") {
+            if let decodedItems = try? JSONDecoder().decode([ToDoItem].self, from: savedItems) {
+                todos = decodedItems
+                return
+            }
+        }
+        todos = []
+    }
+
+    private func saveData() {
+        if let encoded = try? JSONEncoder().encode(todos) {
+            UserDefaults.standard.set(encoded, forKey: "ToDoItems")
+        }
     }
 }
 
-struct ContentView: View {
-    @State private var tasks: [Task] = []
-    @State private var newTaskTitle: String = ""
-    @State private var showDebugMenu = false
-
-    var body: some View {
-        VStack(spacing: 0) {
-            header
-
-            Divider()
-
-            List {
-                ForEach(tasks) { task in
-                    HStack {
-                        Button(action: {
-                            toggleDone(task)
-                        }) {
-                            Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(task.isDone ? .green : .gray)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        Text(task.title)
-                            .strikethrough(task.isDone)
-                            .foregroundColor(task.isDone ? .gray : .primary)
-
-                        Spacer()
-                    }
-                    .padding(.vertical, 4)
-                }
-                .onDelete(perform: deleteTask)
-            }
-         //   .listStyle(.plain)
-
-            HStack {
-                TextField("New task", text: $newTaskTitle)
-#if os(iOS)
-                    .textFieldStyle(.roundedBorder)
-#elseif os(macOS)
-                    .textFieldStyle(.plain)
-#endif
-
-                Button(action: addTask) {
-                    Text("Add")
-                }
-                .disabled(newTaskTitle.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
-            .padding()
-        }
-        .padding(.top, 4)
-        .frame(minWidth: 350, minHeight: 500)
-        .onAppear(perform: loadTasks)
-        .sheet(isPresented: $showDebugMenu) {
-            DebugMenuView(tasks: $tasks)
-        }
-    }
-
-    private var header: some View {
-        HStack {
-            Text("v0.0.21")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Spacer()
-
-            Button(action: {
-                showDebugMenu = true
-            }) {
-                Text("Debug")
-                    .foregroundColor(.red)
-                    .bold()
-            }
-        }
-        .padding([.horizontal, .top])
-    }
-
-    private func addTask() {
-        let trimmed = newTaskTitle.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
-        let task = Task(title: trimmed)
-        tasks.append(task)
-        newTaskTitle = ""
-        saveTasks()
-    }
-
-    private func toggleDone(_ task: Task) {
-        if let index = tasks.firstIndex(where: { $0.id == task.id }) {
-            tasks[index].isDone.toggle()
-            saveTasks()
-        }
-    }
-
-    private func deleteTask(at offsets: IndexSet) {
-        tasks.remove(atOffsets: offsets)
-        saveTasks()
-    }
-
-    private func saveTasks() {
-        if let data = try? JSONEncoder().encode(tasks) {
-            UserDefaults.standard.set(data, forKey: "SavedTasks")
-        }
-    }
-
-    private func loadTasks() {
-        if let data = UserDefaults.standard.data(forKey: "SavedTasks"),
-           let decoded = try? JSONDecoder().decode([Task].self, from: data) {
-            tasks = decoded
-        }
+// MARK: - 預覽提供器
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        return ContentView()
     }
 }
