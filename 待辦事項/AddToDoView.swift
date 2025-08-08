@@ -29,10 +29,9 @@ struct AddToDoView: View {
                         
                         // 安排通知
                         NotificationManager.shared.scheduleNotification(
-                            title: "待辦事項提醒",
+                            id: newItem.id.uuidString, title: "待辦事項提醒",
                             body: newTitle,
-                            date: newDueDate,
-                            id: newItem.id.uuidString
+                            date: newDueDate
                         )
 
                         saveData()

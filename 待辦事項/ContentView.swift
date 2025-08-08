@@ -3,211 +3,166 @@
 
 
 import SwiftUI
-import UserNotifications
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var context
+    @Query var items: [ToDoItem]
+
+    @AppStorage("selectedColor") var selectedColor: String = "blue"
+    @AppStorage("isDailyNotificationOn") var isDailyNotificationOn: Bool = false
+
     @State private var todos: [ToDoItem] = []
-    @State private var showAddView = false
+
+    @State private var showAddSheet = false
+    @State private var showSettings = false
+    @State private var showConsole = false
 
     #if DEBUG
-    @State private var showDebugPanel = false
-    @State private var debugLogs: [String] = []
+    let isDebugMode = true
+    #else
+    let isDebugMode = false
     #endif
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // 頂部版本號 + Debug 按鈕（只在 Debug 模式）
-                HStack {
-                    Text("v1.1.0")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                    Spacer()
-
-                    #if DEBUG
-                    Button(action: {
-                        withAnimation {
-                            showDebugPanel.toggle()
-                        }
-                    }) {
-                        Text("Debug-mode")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.orange)
-                            .cornerRadius(10)
-                    }
-                    #endif
-                }
-                .padding(.horizontal)
-                .padding(.top, 10)
-
-                // Debug 面板（只在 Debug 模式下顯示）
-                #if DEBUG
-                if showDebugPanel {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("🔧 Debug 工具")
-                            .font(.headline)
-
-                        HStack(spacing: 20) {
-                            Button("Test Notification") {
-                                scheduleTestNotification()
+            List {
+                ForEach(items) { item in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            HStack {
+                                if item.isImportant {
+                                    Text("⭐️")
+                                }
+                                Text(item.title)
+                                    .font(.headline)
+                                    .strikethrough(item.isCompleted)
                             }
-                            Button("Print Console") {
-                                appendDebugLog(" Console log at \(DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)) — \(todos.count) 個待辦")
-                            }
-                        }
-
-                        ScrollView {
-                            VStack(alignment: .leading, spacing: 5) {
-                                ForEach(debugLogs.indices, id: \.self) { index in
-                                    Text(debugLogs[index])
+                            if let dueDate = item.dueDate {
+                                if item.isAllDay {
+                                    Text("全天")
                                         .font(.caption)
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .foregroundColor(.gray)
+                                } else {
+                                    Text(timeRemaining(until: dueDate))
+                                        .font(.caption)
+                                        .foregroundColor(dueDate < Date() ? .red : .gray)
                                 }
                             }
-                            .padding(10)
-                            .background(Color.black.opacity(0.8))
-                            .cornerRadius(8)
-                            .frame(maxHeight: 150)
+                        }
+                        Spacer()
+                        if item.isCompleted {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
                         }
                     }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(12)
-                    .padding(.horizontal)
-                    .transition(.move(edge: .top))
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            toggleComplete(item)
+                        } label: {
+                            Label("完成", systemImage: item.isCompleted ? "xmark" : "checkmark")
+                        }
+                        .tint(.green)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            delete(item)
+                        } label: {
+                            Label("刪除", systemImage: "trash")
+                        }
+                    }
                 }
-                #endif
-
-                // 待辦事項標題
-                Text("待辦事項")
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.top, 20)
-
-                // 待辦清單
-                List {
-                    ForEach(todos.indices, id: \.self) { index in
-                        let todo = todos[index]
-                        HStack {
-                            Button(action: {
-                                todos[index].isCompleted.toggle()
-                                saveData()
-                            }) {
-                                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(todo.isCompleted ? .green : .gray)
+            }
+            .navigationTitle("待辦事項")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if isDebugMode {
+                        Menu {
+                            Button("開啟 Console") {
+                                showConsole = true
                             }
-
-                            VStack(alignment: .leading) {
-                                Text(todo.title)
-                                    .strikethrough(todo.isCompleted)
-                                    .font(.title3)
-                                Text("截止: \(todo.dueDate, formatter: dateFormatter)")
-                                    .font(.caption)
+                            Button("測試通知") {
+                                NotificationManager.shared.sendTestNotification()
+                            }
+                        } label: {
+                            HStack {
+                                Text("v1.2.0")
+                                    .font(.subheadline)
                                     .foregroundColor(.gray)
+                                Text("Debug-mode")
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.orange)
+                                    .cornerRadius(10)
                             }
                         }
-                        .padding(.vertical, 4)
                     }
-                    .onDelete(perform: deleteItems)
                 }
-                .listStyle(.plain)
 
-                // 新增按鈕
-                Button(action: {
-                    showAddView = true
-                }) {
-                    Image(systemName: "plus")
-                        .font(.largeTitle)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.orange)
-                        .clipShape(Circle())
-                        .shadow(radius: 5)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gear")
+                    }
                 }
-                .padding(.bottom, 20)
-                .sheet(isPresented: $showAddView) {
-                    AddToDoView(todos: $todos)
+
+                ToolbarItem(placement: .bottomBar) {
+                    Button {
+                        showAddSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .resizable()
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(Color(selectedColor))
+                    }
                 }
             }
-            .navigationBarHidden(true)
-            .onAppear(perform: loadData)
-        }
-    }
-
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .short
-        return formatter
-    }()
-
-    private func deleteItems(at offsets: IndexSet) {
-        for index in offsets {
-            let item = todos[index]
-            NotificationManager.shared.cancelNotification(id: item.id.uuidString)
-        }
-        todos.remove(atOffsets: offsets)
-        saveData()
-        #if DEBUG
-        appendDebugLog("刪除了 \(offsets.count) 個待辦")
-        #endif
-    }
-
-    private func loadData() {
-        if let savedData = UserDefaults.standard.data(forKey: "ToDoItems"),
-           let decoded = try? JSONDecoder().decode([ToDoItem].self, from: savedData) {
-            todos = decoded
-            #if DEBUG
-            appendDebugLog("從 UserDefaults 載入 \(todos.count) 筆資料")
-            #endif
-        } else {
-            #if DEBUG
-            appendDebugLog("沒有載入到任何資料")
-            #endif
-        }
-    }
-
-    private func saveData() {
-        if let encoded = try? JSONEncoder().encode(todos) {
-            UserDefaults.standard.set(encoded, forKey: "ToDoItems")
-            #if DEBUG
-            appendDebugLog("資料已儲存，共 \(todos.count) 筆")
-            #endif
-        }
-    }
-
-    #if DEBUG
-    private func scheduleTestNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "測試通知"
-        content.body = "這是一則測試通知。"
-        content.sound = .default
-
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
-
-        let request = UNNotificationRequest(identifier: "testNotification", content: content, trigger: trigger)
-
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                appendDebugLog(" 通知排程失敗：\(error.localizedDescription)")
-            } else {
-                appendDebugLog("測試通知已排程（3秒後）")
+            .sheet(isPresented: $showAddSheet) {
+                AddToDoView(todos: $todos)
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+            }
+            .sheet(isPresented: $showConsole) {
+                DebugConsoleView()
             }
         }
     }
 
-    private func appendDebugLog(_ message: String) {
-        withAnimation {
-            debugLogs.append(message)
-        }
+    private func delete(_ item: ToDoItem) {
+        NotificationManager.shared.cancelNotification(id: item.id.uuidString)
+        context.delete(item)
+        try? context.save()
     }
-    #endif
+
+    private func toggleComplete(_ item: ToDoItem) {
+        item.isCompleted.toggle()
+        try? context.save()
+    }
+
+    private func timeRemaining(until date: Date) -> String {
+        let now = Date()
+        let calendar = Calendar.current
+        if date < now {
+            return "已過期"
+        }
+        let components = calendar.dateComponents([.day, .hour, .minute], from: now, to: date)
+        var result = ""
+        if let day = components.day, day > 0 {
+            result += "\(day) 天 "
+        }
+        if let hour = components.hour {
+            result += "\(hour) 小時 "
+        }
+        if result.isEmpty, let minute = components.minute {
+            result += "\(minute) 分鐘"
+        }
+        return result.trimmingCharacters(in: .whitespaces)
+    }
 }
-
 
 
 // MARK: - 預覽提供器
@@ -216,3 +171,4 @@ struct ContentView_Previews: PreviewProvider {
         return ContentView()
     }
 }
+

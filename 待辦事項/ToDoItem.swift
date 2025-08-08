@@ -7,10 +7,30 @@
 
 
 import Foundation
+import SwiftData
 
-struct ToDoItem: Identifiable, Codable {
-    let id = UUID()
+@Model
+class ToDoItem {
+    var id: UUID
     var title: String
     var dueDate: Date
-    var isCompleted: Bool = false
+    var isCompleted: Bool
+    var isAllDay: Bool
+    var isImportant: Bool
+
+    init(
+        id: UUID = UUID(),
+        title: String,
+        dueDate: Date,
+        isCompleted: Bool = false,
+        isAllDay: Bool = false,
+        isImportant: Bool = false
+    ) {
+        self.id = id
+        self.title = title
+        self.dueDate = dueDate
+        self.isCompleted = isCompleted
+        self.isAllDay = isAllDay
+        self.isImportant = isImportant
+    }
 }
