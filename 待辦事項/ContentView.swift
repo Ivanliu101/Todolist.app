@@ -1,6 +1,3 @@
-//by ivan
-//v1.0.0
-
 import SwiftUI
 
 struct ContentView: View {
