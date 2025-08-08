@@ -24,11 +24,21 @@ struct AddToDoView: View {
                 }
                 Section {
                     Button("儲存") {
-                        let newTodo = ToDoItem(title: newTitle, dueDate: newDueDate)
-                        todos.append(newTodo)
+                        let newItem = ToDoItem(title: newTitle, dueDate: newDueDate)
+                        todos.append(newItem)
+                        
+                        // 安排通知
+                        NotificationManager.shared.scheduleNotification(
+                            title: "待辦事項提醒",
+                            body: newTitle,
+                            date: newDueDate,
+                            id: newItem.id.uuidString
+                        )
+
                         saveData()
                         dismiss()
                     }
+
                     .disabled(newTitle.isEmpty)
                 }
             }

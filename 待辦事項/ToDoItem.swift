@@ -9,8 +9,8 @@
 import Foundation
 
 struct ToDoItem: Identifiable, Codable {
-    let id = UUID()                 // 每個任務唯一 ID
-    var title: String              // 任務標題
-    var dueDate: Date              // 截止日期
-    var isCompleted: Bool = false  // 是否完成
+    let id = UUID()
+    var title: String
+    var dueDate: Date
+    var isCompleted: Bool = false
 }

@@ -1,3 +1,11 @@
+//
+//  NotificationManager.swift
+//  待辦事項
+//
+//  Created by ivan on 8/8/25.
+//
+
+
 import Foundation
 import UserNotifications
 
@@ -20,9 +28,9 @@ class NotificationManager {
 
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("❌ 通知錯誤：\(error)")
+                print("通知錯誤：\(error)")
             } else {
-                print("📬 已排程通知：\(title) at \(date)")
+                print("已排程通知：\(title) at \(date)")
             }
         }
     }
