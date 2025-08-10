@@ -11,47 +11,56 @@ import SwiftUI
 struct AddToDoView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var todos: [ToDoItem]
-
     @State private var newTitle: String = ""
-    @State private var newDueDate: Date = Date()
-
+    @State private var startDate: Date = Date()
+    @State private var durationHours: Int = 3
+    
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("待辦事項資訊")) {
-                    TextField("輸入待辦事項", text: $newTitle)
-                    DatePicker("截止日期", selection: $newDueDate)
+                Section(header: Text("Task Information")) {
+                    TextField("Enter task", text: $newTitle)
+                    DatePicker("Start Time", selection: $startDate)
+                    
+                    Stepper(value: $durationHours, in: 1...24) {
+                        HStack {
+                            Text("Duration:")
+                            Spacer()
+                            Text("\(durationHours) hour\(durationHours == 1 ? "" : "s")")
+                                .foregroundColor(.blue)
+                        }
+                    }
                 }
+                
                 Section {
-                    Button("儲存") {
-                        let newItem = ToDoItem(title: newTitle, dueDate: newDueDate)
+                    Button("Save") {
+                        let newItem = ToDoItem(
+                            title: newTitle,
+                            startDate: startDate,
+                            durationHours: durationHours
+                        )
                         todos.append(newItem)
                         
-                        // 安排通知
+                        // Schedule notification for end time
                         NotificationManager.shared.scheduleNotification(
-                            title: "待辦事項提醒",
-                            body: newTitle,
-                            date: newDueDate,
+                            title: "Task Time Expired",
+                            body: "Time for '\(newTitle)' has ended",
+                            date: newItem.endDate,
                             id: newItem.id.uuidString
                         )
-
-                        saveData()
+                        
                         dismiss()
                     }
-
                     .disabled(newTitle.isEmpty)
                 }
             }
-            .navigationTitle("新增待辦")
-            .navigationBarItems(leading: Button("取消") {
-                dismiss()
-            })
-        }
-    }
-
-    private func saveData() {
-        if let encoded = try? JSONEncoder().encode(todos) {
-            UserDefaults.standard.set(encoded, forKey: "ToDoItems")
+            .navigationTitle("Add Task")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
         }
     }
 }
