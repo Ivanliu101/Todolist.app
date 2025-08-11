@@ -1,11 +1,3 @@
-//
-//  AddToDoView.swift
-//  待辦事項
-//
-//  Created by ivan on 8/5/25.
-//
-
-
 import SwiftUI
 
 struct AddToDoView: View {
@@ -13,23 +5,13 @@ struct AddToDoView: View {
     @Binding var todos: [ToDoItem]
     @State private var newTitle: String = ""
     @State private var startDate: Date = Date()
-    @State private var durationHours: Int = 3
     
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Task Information")) {
-                    TextField("Enter task", text: $newTitle)
-                    DatePicker("Start Time", selection: $startDate)
-                    
-                    Stepper(value: $durationHours, in: 1...24) {
-                        HStack {
-                            Text("Duration:")
-                            Spacer()
-                            Text("\(durationHours) hour\(durationHours == 1 ? "" : "s")")
-                                .foregroundColor(.blue)
-                        }
-                    }
+                Section(header: Text("Add to do")) {
+                    TextField("Enter here", text: $newTitle)
+                    DatePicker("Start Time", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
                 }
                 
                 Section {
@@ -37,15 +19,15 @@ struct AddToDoView: View {
                         let newItem = ToDoItem(
                             title: newTitle,
                             startDate: startDate,
-                            durationHours: durationHours
+                            isCompleted: false
                         )
                         todos.append(newItem)
                         
-                        // Schedule notification for end time
+                        // Schedule notification for start time
                         NotificationManager.shared.scheduleNotification(
-                            title: "Task Time Expired",
-                            body: "Time for '\(newTitle)' has ended",
-                            date: newItem.endDate,
+                            title: "To Do List Schedule Notification",
+                            body: newTitle,
+                            date: startDate,
                             id: newItem.id.uuidString
                         )
                         
@@ -54,7 +36,7 @@ struct AddToDoView: View {
                     .disabled(newTitle.isEmpty)
                 }
             }
-            .navigationTitle("Add Task")
+            .navigationTitle("New to do")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
