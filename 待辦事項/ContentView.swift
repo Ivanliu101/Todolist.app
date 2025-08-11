@@ -31,7 +31,7 @@ struct ContentView: View {
                     
                     #if DEBUG
                     HStack(spacing: 4) {
-                        Text("v1.4.21")
+                        Text("v1.2.90")
                             .font(.caption)
                             .foregroundColor(Color.gray.opacity(0.7))
                         
