@@ -29,9 +29,33 @@
 		2C0611F92E40EC4300798279 /* 待辦事項UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "待辦事項UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		2C829EAA2E49F76200CA5162 /* Exceptions for "待辦事項" folder in "待辦事項" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Extensions.swift,
+			);
+			target = 2C0611DF2E40EC3B00798279 /* 待辦事項 */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		2C829EAB2E49F76200CA5162 /* Exceptions for "待辦事項" folder in "Copy Bundle Resources" phase from "待辦事項" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 2C0611DE2E40EC3B00798279 /* Resources */;
+			membershipExceptions = (
+				Extensions.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2C0611E22E40EC3B00798279 /* 待辦事項 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2C829EAA2E49F76200CA5162 /* Exceptions for "待辦事項" folder in "待辦事項" target */,
+				2C829EAB2E49F76200CA5162 /* Exceptions for "待辦事項" folder in "Copy Bundle Resources" phase from "待辦事項" target */,
+			);
 			path = "待辦事項";
 			sourceTree = "<group>";
 		};
@@ -401,6 +425,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -416,7 +441,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = yanjun;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.ivan.todoApp-com.ivandev.todoList-com.ivan.todoApp-com.ivandev.todoList-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -452,6 +477,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -466,7 +492,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = yanjun;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = "com.ivan.todoApp-com.ivandev.todoList-com.ivan.todoApp-com.ivandev.todoList-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
